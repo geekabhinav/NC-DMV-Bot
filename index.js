@@ -25,6 +25,7 @@ const handleMessage = (msg, match) => {
   if (msg.text === "/start") {
     process.env["DMV_BOT"] = "ACTIVE";
     process.env["DMV_TARGET"] = CONFIG.target_date;
+    process.env["DMV_CATEGORY"] = CONFIG.category_tile_index;
     process.env["DMV_INTERVAL"] = String(CONFIG.polling_interval);
     getCredentials().catch(console.log);
   } else if (msg.text === "/stop") {
@@ -56,6 +57,26 @@ const handleTargetChange = (msg, match) => {
   }
 }
 
+const handleCategoryChange = (msg, match) => {
+  const user = msg.from.id
+  const chatId = msg.chat.id;
+  if (chatId !== CONFIG.telegram_group_id) {
+    bot.sendMessage(chatId, "You don't have permission to do this. Check telegram_group_id in constants.json");
+    return false;
+  }
+
+  try {
+    const cat = msg.text.replace(/\/category\s(.*)/ig, "$1");
+    if (Number.isNaN(parseInt(cat.trim(), 10))) {
+      throw new Error("Invalid command. Send /category 9 to change the DMV appointment type. Value passed can only be an integer");
+    }
+    process.env["DMV_CATEGORY"] = cat.trim();
+    bot.sendMessage(chatId, `Changed DMV category tile index to ${cat}`);
+  } catch (error) {
+    bot.sendMessage(chatId, error.message);
+  }
+}
+
 const handleIntervalChange = (msg, match) => {
   const user = msg.from.id
   const chatId = msg.chat.id;
@@ -80,6 +101,7 @@ bot.onText(/\/start/, handleMessage);
 bot.onText(/\/stop/, handleMessage);
 bot.onText(/\/target/, handleTargetChange);
 bot.onText(/\/interval/, handleIntervalChange);
+bot.onText(/\/category/, handleCategoryChange);
 bot.on("polling_error", console.log);
 
 module.exports.sendToGroup = sendToGroup;

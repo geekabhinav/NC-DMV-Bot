@@ -17,13 +17,14 @@ let browser = null, page = null, asm = null;
 
 const getPollInterval = () => {
   const currHour = parseInt(moment().format("H"), 10);
-  if (currHour >= 0 && currHour < 6) {
+  if (currHour >= 5 && currHour < 11) {
     sendToGroup("[INFO] Night time polling delayed 5x");
     return parseInt(process.env["DMV_INTERVAL"], 10) * 5;
   }
   return parseInt(process.env["DMV_INTERVAL"], 10);
 };
 const getTargetDate = () => process.env["DMV_TARGET"];
+const getCategory = () => parseInt(process.env["DMV_CATEGORY"], 10);
 const isActive = () => process.env["DMV_BOT"] === "ACTIVE";
 
 const ZIP_CODES = CONFIG.zipCodes.split(",");
@@ -67,7 +68,7 @@ const getCredentials = async (retryCount = 0) => {
   }
   try {
     if (!browser) {
-      browser = await puppeteer.launch({ headless: false });
+      browser = await puppeteer.launch({ headless: true });
       page = await browser.newPage();
       // set user agent (override the default headless User Agent)
       await page.setUserAgent(CONFIG.user_agent);
@@ -81,7 +82,7 @@ const getCredentials = async (retryCount = 0) => {
     await page.waitForNetworkIdle();
     await page.waitForSelector(".QflowObjectItem");
     const selectors = await page.$$(".QflowObjectItem");
-    await selectors[9].click();
+    await selectors[getCategory()].click();
     await page.waitForNetworkIdle();
     await page.waitForSelector(".QflowObjectItem");
     await page.waitForTimeout(1000);

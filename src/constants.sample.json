@@ -6,5 +6,6 @@
   "telegram_user_id": "MyTelegramUsername",
   "polling_interval": 60000,
   "target_date": "2022-12-31",
+  "category_tile_index": "9",
   "zipCodes": "28212,28269,28217,28216"
 }
