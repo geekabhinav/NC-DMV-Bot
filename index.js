@@ -8,6 +8,9 @@ const sendToGroup = (message) => {
   try {
     console.log(message);
     bot.sendMessage(CONFIG.telegram_group_id, message);
+    if (message.includes(CONFIG.telegram_username)) {
+      bot.sendMessage(CONFIG.telegram_user_id, message);
+    }
   } catch (error) {
     console.log("[ERROR_TG] " + error.message);
   }
@@ -25,6 +28,7 @@ const handleMessage = (msg, match) => {
   if (msg.text === "/start") {
     process.env["DMV_BOT"] = "ACTIVE";
     process.env["DMV_TARGET"] = CONFIG.target_date;
+    process.env["DMV_TARGET_START"] = CONFIG.target_start_date;
     process.env["DMV_CATEGORY"] = CONFIG.category_tile_index;
     process.env["DMV_INTERVAL"] = String(CONFIG.polling_interval);
     getCredentials().catch(console.log);

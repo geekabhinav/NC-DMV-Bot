@@ -3,9 +3,11 @@
   "sign_in_URL": "https://skiptheline.ncdot.gov/",
   "telegram_bot_token": "XXXXX",
   "telegram_group_id": "XXXXX",
+  "telegram_username": "29872",
   "telegram_user_id": "MyTelegramUsername",
   "polling_interval": 60000,
   "target_date": "2022-12-31",
+  "target_start_date": "2022-12-01",
   "category_tile_index": "9",
   "zipCodes": "28212,28269,28217,28216"
 }

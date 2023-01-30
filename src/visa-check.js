@@ -24,6 +24,7 @@ const getPollInterval = () => {
   return parseInt(process.env["DMV_INTERVAL"], 10);
 };
 const getTargetDate = () => process.env["DMV_TARGET"];
+const getTargetStartDate = () => process.env["DMV_TARGET_START"];
 const getCategory = () => parseInt(process.env["DMV_CATEGORY"], 10);
 const isActive = () => process.env["DMV_BOT"] === "ACTIVE";
 
@@ -89,6 +90,7 @@ const getCredentials = async (retryCount = 0) => {
     let appointmentMap = [];
     let alertUser = false;
     const targetDate = moment(getTargetDate(), "YYYY-MM-DD");
+    const targetStartDate = moment(getTargetStartDate(), "YYYY-MM-DD");
     for (let i = 0; i < ZIP_CODES.length; i++) {
       const DMVCentre = await page.$x(`//*[contains(@class, "form-control-child") and contains(text(), "${ZIP_CODES[i]}")]`);
       if (!DMVCentre[0]) {
@@ -105,7 +107,7 @@ const getCredentials = async (retryCount = 0) => {
       const dates = await getDates(page, targetDate);
       dates.forEach(d => {
         const dateMoment = moment(d, "YYYY-M-D");
-        if (!alertUser && dateMoment.isSameOrBefore(targetDate)) {
+        if (!alertUser && dateMoment.isSameOrAfter(targetStartDate) && dateMoment.isSameOrBefore(targetDate)) {
           alertUser = true;
         }
         appointmentMap.push({
@@ -122,7 +124,7 @@ const getCredentials = async (retryCount = 0) => {
     }
 
     appointmentMap = _.sortBy(appointmentMap, "epoch");
-    sendToGroup(formatString(appointmentMap, alertUser, targetDate));
+    sendToGroup(formatString(appointmentMap, alertUser, targetStartDate, targetDate));
     startPolling().catch(console.log);
   } catch (error) {
     clearSession().catch(console.log);
@@ -134,13 +136,13 @@ const getCredentials = async (retryCount = 0) => {
   }
 };
 
-const formatString = (appointments, alertUser, targetDate) => {
+const formatString = (appointments, alertUser, targetStartDate, targetDate) => {
   let output = "[SUCCESS] ";
 
   if (alertUser) {
-    output += `${CONFIG.telegram_user_id}: FOUND DMV Appointment! Go book it.\n`;
+    output += `${CONFIG.telegram_username}: FOUND DMV Appointment! Go book it.\n`;
   } else {
-    output += `No appointment available in zip codes ${ZIP_CODES.join("/")} before target date: ${targetDate.format("DD-MMM-YYYY")}
+    output += `No appointment available in zip codes ${ZIP_CODES.join("/")} between: ${targetStartDate.format("DD-MMM-YYYY")} - ${targetDate.format("DD-MMM-YYYY")} 
 `;
   }
 
