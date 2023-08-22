@@ -69,7 +69,7 @@ const getCredentials = async (retryCount = 0) => {
   }
   try {
     if (!browser) {
-      browser = await puppeteer.launch({ headless: false });
+      browser = await puppeteer.launch({ headless: true });
       page = await browser.newPage();
       // set user agent (override the default headless User Agent)
       await page.setUserAgent(CONFIG.user_agent);
@@ -79,6 +79,7 @@ const getCredentials = async (retryCount = 0) => {
     sendToGroup("[INFO] Starting process to check for DMV appointments in NC");
     await page.goto(CONFIG.sign_in_URL, { waitUntil: "networkidle0" });
     await page.waitForSelector("#cmdMakeAppt");
+    await page.waitForTimeout(1000);
     await page.click("#cmdMakeAppt");
     await page.waitForNetworkIdle();
     await page.waitForSelector(".QflowObjectItem");
@@ -151,7 +152,11 @@ const formatString = (appointments, alertUser, targetStartDate, targetDate) => {
 `;
   }
 
-  output += `\nLatest appointment:\nDate: ${appointments[0].date.format("(ddd) DD-MMM-YYYY")}\nCentre: ${appointments[0].centre}`;
+  if (appointments.length === 0) {
+    output += `\nNo appointments available at any centre`;
+  } else {
+    output += `\nLatest appointment:\nDate: ${appointments[0].date.format("(ddd) DD-MMM-YYYY")}\nCentre: ${appointments[0].centre}`;
+  }
 
   return output;
 };
