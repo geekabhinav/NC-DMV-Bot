@@ -69,7 +69,7 @@ const getCredentials = async (retryCount = 0) => {
   }
   try {
     if (!browser) {
-      browser = await puppeteer.launch({ headless: true });
+      browser = await puppeteer.launch({ headless: false });
       page = await browser.newPage();
       // set user agent (override the default headless User Agent)
       await page.setUserAgent(CONFIG.user_agent);
@@ -96,6 +96,11 @@ const getCredentials = async (retryCount = 0) => {
       if (!DMVCentre[0]) {
         continue;
       }
+      const classList = await DMVCentre[0].evaluate(el => [...el.parentNode.parentNode.classList]);
+      if (classList.includes("disabled-unit")) {
+        continue;
+      }
+
       await DMVCentre[0].click();
       await page.waitForFunction(() => !!document.querySelector(".blockUI"));
       await page.waitForFunction(() => !document.querySelector(".blockUI"));
