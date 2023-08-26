@@ -64,8 +64,11 @@ const getDMVName = async (page) => {
 };
 const getCredentials = async (retryCount = 0) => {
   console.log("IS_ACTIVE", isActive());
-  if (retryCount > 2 || !isActive()) {
+  if (retryCount > 3) {
     await Promise.reject("[ERROR] Too many retries. @ArmoredKuruma go fix");
+  }
+  if (!isActive()) {
+    return sendToGroup("Bot not active, send /start to begin");
   }
   try {
     if (!browser) {
